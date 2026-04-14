@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>AI Django Chat</h1>
+<form id="chat-form">
+    {% csrf_token %}
+    <input type="text" name="question" placeholder="Ask a question..." required>
+    <button id="send-button">Send</button>
+</form>
+<div id="answer"></div>
+
+<script>
+    const sendButton = document.getElementById('send-button');
+    const questionInput = document.querySelector('input[name="question"]');
+    const answerContainer = document.getElementById('answer');
+
+    sendButton.addEventListener('click', async function(e) {
+        e.preventDefault();
+
+        const question = questionInput.value.trim();
+        if (!question) return;
+
+        answerContainer.innerHTML = '<p>Loading...</p>';
+
+        const response = await fetch('{% url "answer" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: question })
+        });
+
+        const reader = response.body.getReader();
+        let output = "";
+
+        while(true) {
+            const {done, value} = await reader.read();
+            output += new TextDecoder().decode(value);
+            answerContainer.innerHTML = output;
+
+            if (done) {
+                return;
+            }
+        }
+    });
+
+    </script>
+{% endblock %}

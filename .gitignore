@@ -11,3 +11,7 @@ wheels/
 
 # Environment variables
 .env
+
+# Django-specific files
+*.log
+*.sqlite3
